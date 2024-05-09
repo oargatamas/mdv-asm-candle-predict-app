@@ -1,45 +1,46 @@
 import dask.dataframe as dd
 import pandas as pd
+import re
 from datetime import datetime
 
 
+def setup():
+    pd.set_option('future.no_silent_downcasting', True)
+    pd.set_option('display.max_columns', None)
+    return
+
+
 def prepare_candle_data():
+    setup()
+
     raw_data_location = '../../data/raw/eurusd_m1_candles_2024-01-31_2024-05-08.csv'  # Todo move to environment and/or CLI variable
     ddf = dd.read_csv(
         raw_data_location,
-        dtype={
-            "date": "str",
-            "time": "str",
-            "open": "float64",
-            "high": "float64",
-            "low": "float64",
-            "close": "float64",
-            "tickvol": "float64",
-            "vol": "float64",
-            "spread": "float64"
-        },
         sep='\t',
         blocksize=25e6)
-    # Nos a feladat a fenti csv-ből összehozni a következőket: ( ez amúgy egy metatrader candle export )
-    # a date és time -ből össze kéne hozni egy UTC timestamp-et
-    # a candle type-ot ki kéne találni ( piros vagy zöld gyertya vagy ha jobban tetszik felfele mutat vagy lefele)
 
+    ddf = ddf.reset_index()
 
-    # Todo ez még működik viszont a ddf.head()-et elcseszi: ValueError: Length of values (99957) does not match length of index (3)
-    ddf = ddf.assign(timestamp=lambda x: pd.to_datetime(x['date'] + x['time'], format='%Y.%m.%d%H:%M:%S', utc=True))
-    # Todo szerintem még ez is jó
-    ddf = ddf.drop(columns=['date', 'time'])
+    # Convert date and time into a unix timestamp
+    ddf = ddf.assign(timestamp=lambda df: pd.to_datetime(df['date'] + ' ' + df['time'], format='%Y.%m.%d %H:%M:%S'))
+    ddf = ddf.assign(timestamp=lambda df: df['timestamp'].apply(lambda x: x.timestamp(), meta=('timestamp', 'float64')))
 
-    # Todo ezt az Istennek se tudom rávenni, hogy 0 és 1 legyen. Bool-t nem tudok beadni a hálózatnak...
+    # Calculate candle direction
     ddf = ddf.assign(candle_type=lambda x: x['open'] > x['close'])
-    ddf = ddf.assign(candle_type=lambda x: pd.to_numeric(x['candle_type']))
+    ddf = ddf.replace({False: 0, True: 1})
 
+    # Drop not needed columns
+    ddf = ddf.drop(columns=['date', 'time', 'spread', 'vol'])
+    ddf = ddf.compute()
     print(ddf.dtypes)
-    pd.options.display.max_columns = None
-    print(ddf.head(3))
+    print(ddf.head())
+    ddf.to_csv("training_eurusd_m1.csv")
 
-    # ddf.to_csv("final_data")
+    return
 
+
+def timestamp_map(df):
+    # return pd.to_datetime(df['date'] + df['time'], format='%Y.%m.%d%H:%M:%S')
     return
 
 
