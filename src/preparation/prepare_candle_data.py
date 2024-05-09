@@ -30,7 +30,9 @@ def prepare_candle_data():
     # Todo szerintem még ez is jó
     ddf = ddf.drop(columns=['date', 'time'])
 
-    ddf = ddf.assign(candle_type=lambda x: pd.to_numeric(x['open'] > x['close'], downcast='float'))
+    # Todo ezt az Istennek se tudom rávenni, hogy 0 és 1 legyen. Bool-t nem tudok beadni a hálózatnak...
+    ddf = ddf.assign(candle_type=lambda x: x['open'] > x['close'])
+    ddf = ddf.assign(candle_type=lambda x: pd.to_numeric(x['candle_type']))
 
     print(ddf.dtypes)
     pd.options.display.max_columns = None
