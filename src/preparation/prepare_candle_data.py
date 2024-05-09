@@ -20,8 +20,14 @@ def prepare_candle_data():
         },
         sep='\t',
         blocksize=25e6)
+    # Nos a feladat a fenti csv-ből összehozni a következőket: ( ez amúgy egy metatrader candle export )
+    # a date és time -ből össze kéne hozni egy UTC timestamp-et
+    # a candle type-ot ki kéne találni ( piros vagy zöld gyertya vagy ha jobban tetszik felfele mutat vagy lefele)
 
+
+    # Todo ez még működik viszont a ddf.head()-et elcseszi: ValueError: Length of values (99957) does not match length of index (3)
     ddf = ddf.assign(timestamp=lambda x: pd.to_datetime(x['date'] + x['time'], format='%Y.%m.%d%H:%M:%S', utc=True))
+    # Todo szerintem még ez is jó
     ddf = ddf.drop(columns=['date', 'time'])
 
     ddf = ddf.assign(candle_type=lambda x: pd.to_numeric(x['open'] > x['close'], downcast='float'))
