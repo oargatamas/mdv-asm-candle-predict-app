@@ -39,9 +39,5 @@ def prepare_candle_data():
     return
 
 
-def timestamp_map(df):
-    # return pd.to_datetime(df['date'] + df['time'], format='%Y.%m.%d%H:%M:%S')
-    return
-
 
 prepare_candle_data()
