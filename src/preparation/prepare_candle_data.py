@@ -22,8 +22,10 @@ def prepare_candle_data():
     ddf = ddf.reset_index()
 
     # Convert date and time into a unix timestamp
-    ddf = ddf.assign(timestamp=lambda df: pd.to_datetime(df['date'] + ' ' + df['time'], format='%Y.%m.%d %H:%M:%S'))
-    ddf = ddf.assign(timestamp=lambda df: df['timestamp'].apply(lambda x: x.timestamp(), meta=('timestamp', 'float64')))
+    ddf = ddf.assign(timestamp=lambda df: df['date'] + ' ' + df['time'])
+    ddf = ddf.assign(timestamp=lambda df: df['timestamp'].apply(
+        lambda x: re.sub('[^0-9]', '', x)[:-2],
+        meta=('timestamp', 'float64')))
 
     # Calculate candle direction
     ddf = ddf.assign(candle_type=lambda x: x['open'] > x['close'])
@@ -31,6 +33,9 @@ def prepare_candle_data():
 
     # Drop not needed columns
     ddf = ddf.drop(columns=['date', 'time', 'spread', 'vol'])
+
+    ddf = ddf.sort_values(by=['timestamp'])
+
     ddf = ddf.compute()
     print(ddf.dtypes)
     print(ddf.head())
