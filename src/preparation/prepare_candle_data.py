@@ -7,6 +7,7 @@ from datetime import datetime
 def setup():
     pd.set_option('future.no_silent_downcasting', True)
     pd.set_option('display.max_columns', None)
+    pd.set_option('display.expand_frame_repr', False)
     return
 
 
@@ -38,7 +39,7 @@ def prepare_candle_data():
 
     ddf = ddf.compute()
     print(ddf.dtypes)
-    print(ddf.head())
+    print(ddf.head(10))
     ddf.to_csv("training_eurusd_m1.csv")
 
     return
