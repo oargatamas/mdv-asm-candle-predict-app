@@ -26,7 +26,7 @@ After the export the CSV will have the following columns/fields:
 ### Prepare Sliding Window
 Basic idea is that we give the current chart window to the model, and we expect from the model to give back next possible candles in the chart. For that we need to train the model with the following statements: 
 
-![sliding_window_sample.JPG](doc/Fsliding_window_sample.JPG)
+![sliding_window_sample.JPG](doc%2Fsliding_window_sample.JPG)
 
 -  `red` -> The complete window (training sample = row in training data)
 -  `yellow` -> The simulated history (model input data) 
