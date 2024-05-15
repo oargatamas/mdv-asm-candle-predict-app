@@ -14,7 +14,7 @@ def setup():
 
 def prepare_candle_data():
     setup()
-    sliding_window = 2  # 60
+    sliding_window = 1  # 60
     prediction_window = 5
     train_window = sliding_window - prediction_window
 
@@ -62,7 +62,7 @@ def prepare_candle_data():
                     .set_index('next_timestamp' + suffix)
                     )
 
-        ddf = ddf.join(ddf_copy)
+        ddf = ddf_copy.join(ddf)
 
     ddf = ddf.compute()
 
