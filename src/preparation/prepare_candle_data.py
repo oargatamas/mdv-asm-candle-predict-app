@@ -45,25 +45,12 @@ def prepare_candle_data():
 
     ddf = ddf.set_index('timestamp')
 
-    base_columns = ddf.columns
-    # columns_to_add = [col + str(j + 2) for j in range(0, sliding_window) for col in base_columns]
-    # ddf = ddf.assign(**{col: lambda df: v_lookup(col, df) for col in columns_to_add})
-
-    # -------------------------------
-
-    ddf_copy = ddf.copy()  # Putting original data into a copy dataframe
     # Index is the first timestamp of the moving window
-
+    ddf_copy = ddf.copy()
     for i in range(1, sliding_window):
         suffix = str(i)
         print('Exporting forward data. Iteration: ' + suffix)
-        ddf_copy = ddf_copy.join(ddf.shift(-int(suffix)), rsuffix=suffix)  # Join shifted versions
-
-    # Add 0 to the first columns
-    temp_columns = list(ddf_copy.columns)
-    for i in range(len(ddf_copy.columns)//sliding_window):
-        temp_columns[i] = temp_columns[i] + "0"
-    ddf_copy.columns = temp_columns
+        ddf_copy = ddf_copy.join(ddf.shift(int(suffix)), rsuffix=suffix)  # Join shifted versions
 
     print(ddf_copy.tail())  # The last N rows contains NaN because of the window making procedure
 
