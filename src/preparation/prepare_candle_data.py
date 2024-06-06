@@ -1,7 +1,6 @@
 import dask.dataframe as dd
 import pandas as pd
 import re
-import numpy as np
 
 
 def setup():
@@ -14,7 +13,7 @@ def setup():
 
 def prepare_candle_data():
     setup()
-    sliding_window = 3  # 60
+    sliding_window = 60  # 60
     prediction_window = 5
     train_window = sliding_window - prediction_window
 
@@ -52,14 +51,13 @@ def prepare_candle_data():
         print('Exporting forward data. Iteration: ' + suffix)
         ddf_copy = ddf_copy.join(ddf.shift(int(suffix)), rsuffix=suffix)  # Join shifted versions
 
-    print(ddf_copy.tail())  # The last N rows contains NaN because of the window making procedure
-
-    # -------------------------------
+    ddf = ddf_copy.dropna()
 
     ddf = ddf.compute()
 
     print('Final training set created.')
     print(ddf.head(10))
+Sli    print(ddf.tail(10))
     print(len(ddf))
     print(ddf.dtypes)
 
