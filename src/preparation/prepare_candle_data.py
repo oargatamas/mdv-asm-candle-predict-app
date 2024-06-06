@@ -32,10 +32,6 @@ def prepare_candle_data():
     ddf = ddf.assign(timestamp=lambda df: df['timestamp'].apply(
         lambda x: int(re.sub('[^0-9]', '', x)[:-2]),
         meta=('timestamp', 'int64')))
-    ddf = ddf.assign(next_timestamp=lambda df: df['timestamp'].apply(
-        # in case of 59th minute we have to switch to the beginning of the next minute
-        lambda x: int(x + 41) if int(str(x + 1)[-2:]) == 60 else int(x + 1),
-        meta=('next_timestamp', 'int64')))
 
     # Calculate candle direction 0 -> bullish candle , 1 -> bearish candle
     ddf = ddf.assign(candle_type=lambda x: x['open'] > x['close'])
