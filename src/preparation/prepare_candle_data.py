@@ -57,7 +57,7 @@ def prepare_candle_data():
 
     print('Final training set created.')
     print(ddf.head(10))
-Sli    print(ddf.tail(10))
+    print(ddf.tail(10))
     print(len(ddf))
     print(ddf.dtypes)
 
