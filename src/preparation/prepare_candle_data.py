@@ -52,7 +52,7 @@ def prepare_candle_data():
 
     ddf = ddf_copy.dropna()
 
-    # Labeling series with
+    # Labeling original columns with leading zero
     ddf = ddf.rename(columns={
         'open': 'open_0',
         'close': 'close_0',
@@ -62,6 +62,7 @@ def prepare_candle_data():
         'direction': 'direction_0'
     })
 
+    # Splitting sliding window to input and output labels with center (... in2 in1 in0 out1 out2 ...)
     labels = {}
     for i in range(0, sliding_window):
         is_input = i < input_window
