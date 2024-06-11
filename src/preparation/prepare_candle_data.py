@@ -2,7 +2,6 @@ import dask.dataframe as dd
 import pandas as pd
 import re
 
-
 def setup():
     pd.set_option('future.no_silent_downcasting', True)
     pd.set_option('display.max_columns', None)
@@ -12,9 +11,9 @@ def setup():
 
 
 def prepare_candle_data():
-    setup()
-    sliding_window = 5  # 60
-    prediction_window = 1
+
+    sliding_window = 60  # 60
+    prediction_window = 5
     input_window = sliding_window - prediction_window
 
     raw_data_location = '../../data/raw/eurusd_m1_candles_2024-01-31_2024-05-08.csv'  # Todo move to environment and/or CLI variable
@@ -92,9 +91,8 @@ def prepare_candle_data():
     return
 
 
-def assign(df):
-    return df.query('timestamp == 202401312158')['open']
 
 
 if __name__ == '__main__':
+    setup()
     prepare_candle_data()
