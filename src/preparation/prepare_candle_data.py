@@ -85,13 +85,11 @@ def prepare_candle_data():
     print(ddf.head(10))
     print('Tail elements:')
     print(ddf.tail(10))
-    print('{rows} rows exported'.format(rows= len(ddf)))
+    print('{rows} rows exported'.format(rows=len(ddf)))
 
-    ddf.to_csv("training_eurusd_m1.csv")
+    ddf.to_csv("../../data/prepared/training_eurusd_m1.csv")
 
     return
-
-
 
 
 if __name__ == '__main__':
