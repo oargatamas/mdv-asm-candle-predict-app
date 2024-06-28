@@ -33,13 +33,13 @@ def prepare_candle_data():
 
     # Calculate candle direction 0 -> bullish candle , 1 -> bearish candle
     ddf = ddf.assign(direction=lambda x: x['open'] > x['close'])
-    ddf = ddf.replace({False: 0, True: 1})
+    ddf = ddf.replace({False: float(0), True: float(1)})
 
     # To keep time series direction
     ddf = ddf.sort_values(by=['timestamp'], ascending=True)
 
     # Drop not needed columns
-    ddf = ddf.drop(columns=['date', 'time', 'spread', 'vol'])
+    ddf = ddf.drop(columns=['date', 'time', 'spread', 'vol', 'tickvol'])
 
     ddf = ddf.set_index('timestamp')
 
@@ -58,7 +58,6 @@ def prepare_candle_data():
         'close': 'close_0',
         'high': 'high_0',
         'low': 'low_0',
-        'tickvol': 'tickvol_0',
         'direction': 'direction_0'
     })
 
@@ -72,7 +71,6 @@ def prepare_candle_data():
         labels['close_' + str(i)] = '{prefix}_close_{suffix}'.format(prefix=prefix, suffix=suffix)
         labels['high_' + str(i)] = '{prefix}_high_{suffix}'.format(prefix=prefix, suffix=suffix)
         labels['low_' + str(i)] = '{prefix}_low_{suffix}'.format(prefix=prefix, suffix=suffix)
-        labels['tickvol_' + str(i)] = '{prefix}_tickvol_{suffix}'.format(prefix=prefix, suffix=suffix)
         labels['direction_' + str(i)] = '{prefix}_direction_{suffix}'.format(prefix=prefix, suffix=suffix)
 
     ddf = ddf.rename(columns=labels)

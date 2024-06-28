@@ -1,3 +1,5 @@
+from sklearn.model_selection import train_test_split
+import pandas as pd
 import numpy as np
 import os
 
@@ -8,25 +10,51 @@ os.environ["KERAS_BACKEND"] = "jax"
 # package is imported.
 import keras
 
-def train_time_series():
-    # Load the data and split it between train and test sets
-    (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
 
-    # Scale images to the [0, 1] range
-    x_train = x_train.astype("float32") / 255
-    x_test = x_test.astype("float32") / 255
-    # Make sure images have shape (28, 28, 1)
-    x_train = np.expand_dims(x_train, -1)
-    x_test = np.expand_dims(x_test, -1)
+def setup():
+    pd.set_option('future.no_silent_downcasting', True)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.expand_frame_repr', False)
+    return
+
+
+def train_time_series():
+    setup()
+
+    sliding_window = 60  # 60
+    prediction_window = 5
+    input_window = sliding_window - prediction_window
+    bar_columns = 5
+    center_index = input_window * bar_columns
+
+    # Load the data and split it between train and test sets
+    raw_data_location = '../../data/prepared/training_eurusd_m1.csv'  # Todo move to environment and/or CLI variable
+    df = pd.read_csv(raw_data_location, sep=',')
+
+    train, test = train_test_split(df, test_size=0.2)
+
+    x_train = train.iloc[:, 1:center_index]
+    y_train = train.iloc[:, (center_index + 1):]
+
+    x_test = test.iloc[:, 1:center_index]
+    y_test = test.iloc[:, (center_index + 1):]
+
+    # x_train = x_train.values.reshape((1, x_train.shape[0], x_train.shape[1]))
+    # x_test = x_test.values.reshape((1, x_test.shape[0], y_train.shape[1]))
 
     print("x_train shape:", x_train.shape)
-    print("y_train shape:", y_train.shape)
     print(x_train.shape[0], "train samples")
-    print(x_test.shape[0], "test samples")
+    print(x_train.head())
 
-    model = get_model()
+    print("y_train shape:", y_train.shape)
+    print(y_train.shape[0], "test samples")
+    print(y_train.sample())
+
+    model = get_model(x_train.shape, y_train.shape[1])
+
     model.compile(
-        loss=keras.losses.SparseCategoricalCrossentropy(),
+        loss=keras.losses.MeanSquaredError(),
         optimizer=keras.optimizers.Adam(learning_rate=1e-3),
         metrics=[
             keras.metrics.SparseCategoricalAccuracy(name="acc"),
@@ -37,9 +65,11 @@ def train_time_series():
     epochs = 20
 
     callbacks = [
-        keras.callbacks.ModelCheckpoint(filepath="model_at_epoch_{epoch}.keras"),
-        keras.callbacks.EarlyStopping(monitor="val_loss", patience=2),
+        keras.callbacks.ModelCheckpoint(filepath="../model/model_at_epoch_{epoch}.keras"),
+        #keras.callbacks.EarlyStopping(monitor="val_loss", patience=2),
     ]
+
+    model.summary()
 
     model.fit(
         x_train,
@@ -50,25 +80,31 @@ def train_time_series():
         callbacks=callbacks,
     )
     score = model.evaluate(x_test, y_test, verbose=0)
+    print("Model score:")
+    print(score)
 
-    model.save("final_model.keras")
+    model.save("../model/final_model.keras")
+    model.summary()
 
-def get_model():
-    # Model parameters
-    num_classes = 10
-    input_shape = (28, 28, 1)
+    input = x_test.iloc[0].values.reshape(1, -1)
+    print(input)
 
+    result = model.predict(input)
+    print("Prediction: ")
+    print(result)
+
+    print("Reality: ")
+    print(y_test.iloc[0].values.reshape(1, -1))
+
+
+def get_model(input_shape, output_shape):
     return keras.Sequential(
         [
-            keras.layers.Input(shape=input_shape),
-            keras.layers.Conv2D(64, kernel_size=(3, 3), activation="relu"),
-            keras.layers.Conv2D(64, kernel_size=(3, 3), activation="relu"),
-            keras.layers.MaxPooling2D(pool_size=(2, 2)),
-            keras.layers.Conv2D(128, kernel_size=(3, 3), activation="relu"),
-            keras.layers.Conv2D(128, kernel_size=(3, 3), activation="relu"),
-            keras.layers.GlobalAveragePooling2D(),
-            keras.layers.Dropout(0.5),
-            keras.layers.Dense(num_classes, activation="softmax"),
+            keras.layers.Input((input_shape[1],)),
+            keras.layers.Dense(1024, activation="relu"),
+            keras.layers.Dense(1024, activation="relu"),
+            keras.layers.Dense(output_shape, activation="sigmoid"),
+            keras.layers.Reshape([-1, 1]),
         ]
     )
 
