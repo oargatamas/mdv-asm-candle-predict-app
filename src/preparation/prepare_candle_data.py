@@ -39,7 +39,7 @@ def prepare_candle_data():
     ddf = ddf.sort_values(by=['timestamp'], ascending=True)
 
     # Drop not needed columns
-    ddf = ddf.drop(columns=['date', 'time', 'spread', 'vol', 'tickvol'])
+    ddf = ddf.drop(columns=['date', 'time', 'spread', 'vol', 'tickvol', 'direction'])
 
     ddf = ddf.set_index('timestamp')
 
@@ -58,7 +58,7 @@ def prepare_candle_data():
         'close': 'close_0',
         'high': 'high_0',
         'low': 'low_0',
-        'direction': 'direction_0'
+        #'direction': 'direction_0'
     })
 
     # Splitting sliding window to input and output labels with center (... in2 in1 in0 out1 out2 ...)
@@ -71,10 +71,9 @@ def prepare_candle_data():
         labels['close_' + str(i)] = '{prefix}_close_{suffix}'.format(prefix=prefix, suffix=suffix)
         labels['high_' + str(i)] = '{prefix}_high_{suffix}'.format(prefix=prefix, suffix=suffix)
         labels['low_' + str(i)] = '{prefix}_low_{suffix}'.format(prefix=prefix, suffix=suffix)
-        labels['direction_' + str(i)] = '{prefix}_direction_{suffix}'.format(prefix=prefix, suffix=suffix)
+        #labels['direction_' + str(i)] = '{prefix}_direction_{suffix}'.format(prefix=prefix, suffix=suffix)
 
     ddf = ddf.rename(columns=labels)
-
 
     ddf = ddf.compute()
 

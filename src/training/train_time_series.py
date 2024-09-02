@@ -25,7 +25,7 @@ def train_time_series():
     sliding_window = 60  # 60
     prediction_window = 5
     input_window = sliding_window - prediction_window
-    bar_columns = 5
+    bar_columns = 4
     center_index = input_window * bar_columns
 
     # Load the data and split it between train and test sets
@@ -57,16 +57,16 @@ def train_time_series():
         loss=keras.losses.MeanSquaredError(),
         optimizer=keras.optimizers.Adam(learning_rate=1e-3),
         metrics=[
-            keras.metrics.SparseCategoricalAccuracy(name="acc"),
+            keras.metrics.MeanSquaredError(name="acc"),
         ],
     )
 
     batch_size = 128
-    epochs = 20
+    epochs = 5
 
     callbacks = [
         keras.callbacks.ModelCheckpoint(filepath="../model/model_at_epoch_{epoch}.keras"),
-        #keras.callbacks.EarlyStopping(monitor="val_loss", patience=2),
+        keras.callbacks.EarlyStopping(monitor="val_loss", patience=2),
     ]
 
     model.summary()
@@ -86,10 +86,10 @@ def train_time_series():
     model.save("../model/final_model.keras")
     model.summary()
 
-    input = x_test.iloc[0].values.reshape(1, -1)
-    print(input)
+    model_input = x_test.iloc[0].values.reshape(1, -1)
+    print(model_input)
 
-    result = model.predict(input)
+    result = model.predict(model_input)
     print("Prediction: ")
     print(result)
 
@@ -101,8 +101,7 @@ def get_model(input_shape, output_shape):
     return keras.Sequential(
         [
             keras.layers.Input((input_shape[1],)),
-            keras.layers.Dense(1024, activation="relu"),
-            keras.layers.Dense(1024, activation="relu"),
+            keras.layers.Dense(128, activation="relu"),
             keras.layers.Dense(output_shape, activation="sigmoid"),
             keras.layers.Reshape([-1, 1]),
         ]
